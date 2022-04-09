@@ -11,7 +11,7 @@ def load_dataset(dataset_dir):
         with open(os.path.join(dataset_dir, 'zinc250k.pickle'), 'rb') as fin:
             dataset = pickle.load(fin)
     else:
-        dataset = datasets.ZINC250k('~/molecule-datasets/', kekulize=True, node_feature='symbol')
+        dataset = datasets.ZINC250k(dataset_dir, kekulize=True, node_feature='symbol')
         with open(os.path.join(dataset_dir, 'zinc250k.pickle'), 'wb') as fout:
             pickle.dump(dataset, fout)
 
