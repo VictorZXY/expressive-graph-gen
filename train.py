@@ -46,9 +46,9 @@ def train_GCPN(dataset, gnn_type, checkpoint_dir,
 
     pretrain_solver.train(num_epoch=num_pretrain_epochs)
     if num_pretrain_epochs > 1:
-        pretrain_model_name = f'gcpn_zinc250k_{num_pretrain_epochs}epochs.pickle'
+        pretrain_model_name = f'gcpn_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epochs.pickle'
     else:
-        pretrain_model_name = f'gcpn_zinc250k_{num_pretrain_epochs}epoch.pickle'
+        pretrain_model_name = f'gcpn_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epoch.pickle'
     pretrain_solver.save(os.path.join(checkpoint_dir, pretrain_model_name))
 
     pretrain_results = pretrain_task.generate(num_sample=32, max_resample=5)
@@ -70,9 +70,9 @@ def train_GCPN(dataset, gnn_type, checkpoint_dir,
 
     finetune_solver.train(num_epoch=num_finetune_epochs)
     if num_pretrain_epochs > 1:
-        finetune_model_name = f'gcpn_zinc250k_{num_pretrain_epochs}epochs_finetune.pickle'
+        finetune_model_name = f'gcpn_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epochs_finetune.pickle'
     else:
-        finetune_model_name = f'gcpn_zinc250k_{num_pretrain_epochs}epoch_finetune.pickle'
+        finetune_model_name = f'gcpn_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epoch_finetune.pickle'
     finetune_solver.save(os.path.join(checkpoint_dir, finetune_model_name))
 
     finetune_results = finetune_task.generate(num_sample=32, max_resample=5)
@@ -115,9 +115,9 @@ def train_GraphAF(dataset, gnn_type, checkpoint_dir,
 
     pretrain_solver.train(num_epoch=num_pretrain_epochs)
     if num_pretrain_epochs > 1:
-        pretrain_model_name = f'graphaf_zinc250k_{num_pretrain_epochs}epochs.pickle'
+        pretrain_model_name = f'graphaf_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epochs.pickle'
     else:
-        pretrain_model_name = f'graphaf_zinc250k_{num_pretrain_epochs}epoch.pickle'
+        pretrain_model_name = f'graphaf_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epoch.pickle'
     pretrain_solver.save(os.path.join(checkpoint_dir, pretrain_model_name))
 
     pretrain_results = pretrain_task.generate(num_sample=32)
@@ -140,9 +140,9 @@ def train_GraphAF(dataset, gnn_type, checkpoint_dir,
 
     finetune_solver.train(num_epoch=num_finetune_epochs)
     if num_pretrain_epochs > 1:
-        finetune_model_name = f'graphaf_zinc250k_{num_pretrain_epochs}epochs_finetune.pickle'
+        finetune_model_name = f'graphaf_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epochs_finetune.pickle'
     else:
-        finetune_model_name = f'graphaf_zinc250k_{num_pretrain_epochs}epoch_finetune.pickle'
+        finetune_model_name = f'graphaf_{gnn_type.lower()}_zinc250k_{num_pretrain_epochs}epoch_finetune.pickle'
     finetune_solver.save(os.path.join(checkpoint_dir, finetune_model_name))
 
     finetune_results = finetune_task.generate(num_sample=32)
