@@ -42,6 +42,6 @@ def load_GNN(dataset, model_type, gnn_type):
         else:
             raise NotImplementedError
     else:
-        raise NotImplemented
+        assert False
 
     return gnn
