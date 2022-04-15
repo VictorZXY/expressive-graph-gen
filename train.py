@@ -9,7 +9,7 @@ from torchdrug.layers import distribution
 from utils import load_dataset, load_GNN
 
 
-def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=10):
+def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=1):
     model = load_GNN(dataset=dataset, model_type='GCPN', gnn_type=gnn_type)
 
     pretrain_task = tasks.GCPNGeneration(model, dataset.atom_types,
