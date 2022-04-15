@@ -3,6 +3,8 @@ import pickle
 
 from torchdrug import datasets, models
 
+from models.gin import GIN_GCPN
+
 
 def load_dataset(dataset_dir):
     if os.path.exists(os.path.join(dataset_dir, 'zinc250k.pickle')):
@@ -23,7 +25,12 @@ def load_GNN(dataset, model_type, gnn_type):
                           num_relation=dataset.num_bond_type,
                           batch_norm=True)
     elif gnn_type == 'GIN':
-        if model_type == 'GraphAF':
+        if model_type == 'GCPN':
+            gnn = GIN_GCPN(input_dim=dataset.node_feature_dim,
+                           hidden_dims=[256, 256, 256],
+                           num_relation=dataset.num_bond_type,
+                           batch_norm=True)
+        elif model_type == 'GraphAF':
             gnn = models.GIN(input_dim=dataset.node_feature_dim,
                              hidden_dims=[256, 256, 256],
                              batch_norm=True)
