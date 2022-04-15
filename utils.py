@@ -17,31 +17,19 @@ def load_dataset(dataset_dir):
 
 
 def load_GNN(dataset, model_type, gnn_type):
-    if model_type == 'GCPN':
-        if gnn_type == 'RGCN':
-            gnn = models.RGCN(input_dim=dataset.node_feature_dim,
-                              hidden_dims=[256, 256, 256, 256],
-                              num_relation=dataset.num_bond_type,
-                              batch_norm=False)
-        elif gnn_type == 'GIN':
-            gnn = models.GIN(input_dim=dataset.node_feature_dim,
-                             hidden_dims=[256, 256, 256, 256],
-                             batch_norm=False)
-        else:
-            raise NotImplementedError
-    elif model_type == 'GraphAF':
-        if gnn_type == 'RGCN':
-            gnn = models.RGCN(input_dim=dataset.node_feature_dim,
-                              hidden_dims=[256, 256, 256],
-                              num_relation=dataset.num_bond_type,
-                              batch_norm=True)
-        elif gnn_type == 'GIN':
+    if gnn_type == 'RGCN':
+        gnn = models.RGCN(input_dim=dataset.node_feature_dim,
+                          hidden_dims=[256, 256, 256],
+                          num_relation=dataset.num_bond_type,
+                          batch_norm=True)
+    elif gnn_type == 'GIN':
+        if model_type == 'GraphAF':
             gnn = models.GIN(input_dim=dataset.node_feature_dim,
                              hidden_dims=[256, 256, 256],
                              batch_norm=True)
         else:
-            raise NotImplementedError
+            assert False
     else:
-        assert False
+        raise NotImplementedError
 
     return gnn
