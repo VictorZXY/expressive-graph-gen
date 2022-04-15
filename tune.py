@@ -17,10 +17,10 @@ def finetune_GCPN(dataset, gnn_type, pretrained_model_path, num_epoch=10):
                                          reward_temperature=1,
                                          agent_update_interval=3,
                                          gamma=0.9)
-    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
+    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=2.5e-4)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
                                   finetune_optimizer, gpus=(0,),
-                                  batch_size=16, log_interval=10)
+                                  batch_size=32, log_interval=10)
     finetune_solver.load(pretrained_model_path, load_optimizer=False)
 
     finetune_solver.train(num_epoch=num_epoch)
@@ -51,7 +51,7 @@ def finetune_GraphAF(dataset, gnn_type, pretrained_model_path, num_epoch=10):
                                                    baseline_momentum=0.9,
                                                    agent_update_interval=5,
                                                    gamma=0.9)
-    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
+    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-4)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
                                   finetune_optimizer, gpus=(0,),
                                   batch_size=64, log_interval=10)
