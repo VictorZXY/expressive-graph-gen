@@ -9,7 +9,7 @@ from torchdrug.layers import distribution
 from utils import load_dataset, load_GNN
 
 
-def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=1):
+def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=10):
     model = load_GNN(dataset=dataset, model_type='GCPN', gnn_type=gnn_type)
 
     pretrain_task = tasks.GCPNGeneration(model, dataset.atom_types,
@@ -74,7 +74,9 @@ if __name__ == '__main__':
     dataset = load_dataset(args.data_dir)
     if args.model_type == 'GCPN':
         pretrain_GCPN(dataset=dataset, gnn_type=args.gnn_type,
-                      checkpoint_dir=args.checkpoint_dir)
+                      checkpoint_dir=args.checkpoint_dir, num_epoch=1)
+        pretrain_GCPN(dataset=dataset, gnn_type=args.gnn_type,
+                      checkpoint_dir=args.checkpoint_dir, num_epoch=10)
     elif args.model_type == 'GraphAF':
         pretrain_GraphAF(dataset=dataset, gnn_type=args.gnn_type,
                          checkpoint_dir=args.checkpoint_dir)
