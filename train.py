@@ -18,7 +18,7 @@ def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=10):
     pretrain_optimizer = optim.Adam(pretrain_task.parameters(), lr=1e-3)
     pretrain_solver = core.Engine(pretrain_task, dataset, None, None,
                                   pretrain_optimizer, gpus=(0,),
-                                  batch_size=128, log_interval=10)
+                                  batch_size=128, log_interval=100)
 
     pretrain_solver.train(num_epoch=num_epoch)
     if num_epoch > 1:
@@ -27,7 +27,7 @@ def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=10):
         pretrain_model_name = f'gcpn_{gnn_type.lower()}_zinc250k_{num_epoch}epoch.pickle'
     pretrain_solver.save(os.path.join(checkpoint_dir, pretrain_model_name))
 
-    pretrain_results = pretrain_task.generate(num_sample=32, max_resample=5)
+    pretrain_results = pretrain_task.generate(num_sample=32)
     print(pretrain_results.to_smiles())
 
 
@@ -50,7 +50,7 @@ def pretrain_GraphAF(dataset, gnn_type, checkpoint_dir, num_epoch=10):
     pretrain_optimizer = optim.Adam(pretrain_task.parameters(), lr=1e-3)
     pretrain_solver = core.Engine(pretrain_task, dataset, None, None,
                                   pretrain_optimizer, gpus=(0,),
-                                  batch_size=128, log_interval=10)
+                                  batch_size=128, log_interval=100)
 
     pretrain_solver.train(num_epoch=num_epoch)
     if num_epoch > 1:

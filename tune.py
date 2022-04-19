@@ -28,17 +28,17 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
     else:
         assert False
 
-    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=2.5e-4)
+    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
                                   finetune_optimizer, gpus=(0,),
-                                  batch_size=32, log_interval=10)
+                                  batch_size=64, log_interval=200)
     finetune_solver.load(pretrained_model_path, load_optimizer=False)
 
     finetune_solver.train(num_epoch=num_epoch)
     finetune_model_path = pretrained_model_path.replace('.pickle', '_finetune.pickle')
     finetune_solver.save(finetune_model_path)
 
-    finetune_results = finetune_task.generate(num_sample=32, max_resample=5)
+    finetune_results = finetune_task.generate(num_sample=32)
     print(finetune_results.to_smiles())
 
 
@@ -65,7 +65,7 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=1
                                                        gamma=0.9)
     elif task == 'qed':
         finetune_task = tasks.AutoregressiveGeneration(node_flow, edge_flow,
-                                                       max_node=38, max_edge_unroll=12,
+                                                       max_edge_unroll=12, max_node=38,
                                                        task="qed", criterion={"ppo": 0.25, "nll": 1.0},
                                                        reward_temperature=10,
                                                        baseline_momentum=0.9,
@@ -74,10 +74,10 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=1
     else:
         assert False
 
-    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-4)
+    finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
                                   finetune_optimizer, gpus=(0,),
-                                  batch_size=64, log_interval=10)
+                                  batch_size=64, log_interval=200)
     finetune_solver.load(pretrained_model_path, load_optimizer=False)
 
     finetune_solver.train(num_epoch=num_epoch)

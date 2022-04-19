@@ -21,18 +21,18 @@ def load_dataset(dataset_dir):
 def load_GNN(dataset, model_type, gnn_type):
     if gnn_type == 'RGCN':
         gnn = models.RGCN(input_dim=dataset.node_feature_dim,
-                          hidden_dims=[256, 256, 256],
+                          hidden_dims=[128, 128, 128],
                           num_relation=dataset.num_bond_type,
                           batch_norm=True)
     elif gnn_type == 'GIN':
         if model_type == 'GCPN':
             gnn = GIN_GCPN(input_dim=dataset.node_feature_dim,
-                           hidden_dims=[256, 256, 256],
+                           hidden_dims=[128, 128, 128],
                            num_relation=dataset.num_bond_type,
                            batch_norm=True)
         elif model_type == 'GraphAF':
             gnn = models.GIN(input_dim=dataset.node_feature_dim,
-                             hidden_dims=[256, 256, 256],
+                             hidden_dims=[128, 128, 128],
                              batch_norm=True)
         else:
             assert False
