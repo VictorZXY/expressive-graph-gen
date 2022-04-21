@@ -42,7 +42,7 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
     print(finetune_results.to_smiles())
 
 
-def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
+def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5):
     model = load_GNN(dataset=dataset, model_type='GraphAF', gnn_type=gnn_type)
 
     num_atom_type = dataset.num_atom_type
