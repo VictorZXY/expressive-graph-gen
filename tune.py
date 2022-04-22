@@ -95,12 +95,23 @@ if __name__ == '__main__':
     parser.add_argument('--task', type=str, required=True)
     parser.add_argument('--data_dir', type=str, required=True)
     parser.add_argument('--pretrained_model_path', type=str, required=True)
+    parser.add_argument('--num_epoch', type=int, default=-1)
     args = parser.parse_args()
 
     dataset = load_dataset(args.data_dir)
-    if args.model_type == 'GCPN':
-        finetune_GCPN(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
-                      pretrained_model_path=args.pretrained_model_path)
-    elif args.model_type == 'GraphAF':
-        finetune_GraphAF(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
-                         pretrained_model_path=args.pretrained_model_path)
+    if args.num_epoch == -1:
+        if args.model_type == 'GCPN':
+            finetune_GCPN(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
+                          pretrained_model_path=args.pretrained_model_path)
+        elif args.model_type == 'GraphAF':
+            finetune_GraphAF(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
+                             pretrained_model_path=args.pretrained_model_path)
+    else:
+        if args.model_type == 'GCPN':
+            finetune_GCPN(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
+                          pretrained_model_path=args.pretrained_model_path,
+                          num_epoch=args.num_epoch)
+        elif args.model_type == 'GraphAF':
+            finetune_GraphAF(dataset=dataset, gnn_type=args.gnn_type, task=args.task,
+                             pretrained_model_path=args.pretrained_model_path,
+                             num_epoch=args.num_epoch)
