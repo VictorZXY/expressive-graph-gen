@@ -26,7 +26,7 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
                                              agent_update_interval=3,
                                              gamma=0.9)
     else:
-        assert False
+        raise ValueError(f'Unknown task {task}')
 
     finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
@@ -40,6 +40,12 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
 
     finetune_results = finetune_task.generate(num_sample=32)
     print(finetune_results.to_smiles())
+    if task == 'plogp':
+        print(finetune_task.best_results['Penalized logP'])
+    elif task == 'qed':
+        print(finetune_task.best_results['QED'])
+    else:
+        raise ValueError(f'Unknown task {task}')
 
 
 def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5):
@@ -72,7 +78,7 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5
                                                        agent_update_interval=5,
                                                        gamma=0.9)
     else:
-        assert False
+        raise ValueError(f'Unknown task {task}')
 
     finetune_optimizer = optim.Adam(finetune_task.parameters(), lr=1e-5)
     finetune_solver = core.Engine(finetune_task, dataset, None, None,
@@ -86,6 +92,12 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5
 
     finetune_results = finetune_task.generate(num_sample=32)
     print(finetune_results.to_smiles())
+    if task == 'plogp':
+        print(finetune_task.best_results['Penalized logP'])
+    elif task == 'qed':
+        print(finetune_task.best_results['QED'])
+    else:
+        raise ValueError(f'Unknown task {task}')
 
 
 if __name__ == '__main__':
