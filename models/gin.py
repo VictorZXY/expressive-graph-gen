@@ -24,8 +24,8 @@ class GIN_GCPN(models.GIN):
     """
 
     def __init__(self, input_dim=None, hidden_dims=None, num_relation=None, edge_input_dim=None, num_mlp_layer=2, eps=0,
-                 learn_eps=False, short_cut=False, batch_norm=False, activation="relu", concat_hidden=False,
-                 readout="sum"):
+                 learn_eps=False, short_cut=False, batch_norm=False, activation='relu', concat_hidden=False,
+                 readout='sum'):
         super(GIN_GCPN, self).__init__(input_dim, hidden_dims, edge_input_dim, num_mlp_layer, eps, learn_eps,
                                        short_cut, batch_norm, activation, concat_hidden, readout)
 
