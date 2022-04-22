@@ -35,7 +35,7 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
     finetune_solver.load(pretrained_model_path, load_optimizer=False)
 
     finetune_solver.train(num_epoch=num_epoch)
-    finetune_model_path = pretrained_model_path.replace('.pickle', '_finetune.pickle')
+    finetune_model_path = pretrained_model_path.replace('.pickle', f'_finetune_{task}.pickle')
     finetune_solver.save(finetune_model_path)
 
     finetune_results = finetune_task.generate(num_sample=32)
@@ -81,7 +81,7 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5
     finetune_solver.load(pretrained_model_path, load_optimizer=False)
 
     finetune_solver.train(num_epoch=num_epoch)
-    finetune_model_path = pretrained_model_path.replace('.pickle', '_finetune.pickle')
+    finetune_model_path = pretrained_model_path.replace('.pickle', f'_finetune_{task}.pickle')
     finetune_solver.save(finetune_model_path)
 
     finetune_results = finetune_task.generate(num_sample=32)
