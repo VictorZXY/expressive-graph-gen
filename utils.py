@@ -4,6 +4,7 @@ import pickle
 from torchdrug import datasets, models
 
 from models.gin import GIN_GCPN
+from models.gsn import prepare_GSN_dataset, GSN
 
 
 def load_dataset(dataset_dir):
@@ -13,6 +14,19 @@ def load_dataset(dataset_dir):
     else:
         dataset = datasets.ZINC250k(dataset_dir, kekulize=True, node_feature='symbol')
         with open(os.path.join(dataset_dir, 'zinc250k.pickle'), 'wb') as fout:
+            pickle.dump(dataset, fout)
+
+    return dataset
+
+
+def load_GSN_dataset(dataset_dir):
+    if os.path.exists(os.path.join(dataset_dir, 'zinc250k_gsn.pickle')):
+        with open(os.path.join(dataset_dir, 'zinc250k_gsn.pickle'), 'rb') as fin:
+            dataset = pickle.load(fin)
+    else:
+        dataset = load_dataset(dataset_dir)
+        prepare_GSN_dataset(dataset)
+        with open(os.path.join(dataset_dir, 'zinc250k_gsn.pickle'), 'wb') as fout:
             pickle.dump(dataset, fout)
 
     return dataset
@@ -36,6 +50,12 @@ def load_GNN(dataset, model_type, gnn_type):
                              batch_norm=True)
         else:
             assert False
+    elif gnn_type == 'GSN':
+        gnn = GSN(input_dim=dataset.node_feature_dim,
+                  hidden_dim=128, num_layer=3,
+                  edge_input_dim=dataset.edge_feature_dim,
+                  num_relation=dataset.num_bond_type,
+                  batch_norm=True)
     else:
         raise NotImplementedError
 

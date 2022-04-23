@@ -5,7 +5,7 @@ from torch import optim
 from torchdrug import models, tasks, core
 from torchdrug.layers import distribution
 
-from utils import load_dataset, load_GNN
+from utils import load_dataset, load_GSN_dataset, load_GNN
 
 
 def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
@@ -14,14 +14,14 @@ def finetune_GCPN(dataset, gnn_type, task, pretrained_model_path, num_epoch=10):
     if task == 'plogp':
         finetune_task = tasks.GCPNGeneration(model, dataset.atom_types,
                                              max_edge_unroll=12, max_node=38,
-                                             task="plogp", criterion="ppo",
+                                             task='plogp', criterion='ppo',
                                              reward_temperature=1,
                                              agent_update_interval=3,
                                              gamma=0.9)
     elif task == 'qed':
         finetune_task = tasks.GCPNGeneration(model, dataset.atom_types,
                                              max_edge_unroll=12, max_node=38,
-                                             task="qed", criterion=("ppo", "nll"),
+                                             task='qed', criterion=('ppo', 'nll'),
                                              reward_temperature=1,
                                              agent_update_interval=3,
                                              gamma=0.9)
@@ -64,7 +64,7 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5
     if task == 'plogp':
         finetune_task = tasks.AutoregressiveGeneration(node_flow, edge_flow,
                                                        max_edge_unroll=12, max_node=38,
-                                                       task="plogp", criterion="ppo",
+                                                       task='plogp', criterion='ppo',
                                                        reward_temperature=20,
                                                        baseline_momentum=0.9,
                                                        agent_update_interval=5,
@@ -72,7 +72,7 @@ def finetune_GraphAF(dataset, gnn_type, task, pretrained_model_path, num_epoch=5
     elif task == 'qed':
         finetune_task = tasks.AutoregressiveGeneration(node_flow, edge_flow,
                                                        max_edge_unroll=12, max_node=38,
-                                                       task="qed", criterion={"ppo": 0.25, "nll": 1.0},
+                                                       task='qed', criterion={'ppo': 0.25, 'nll': 1.0},
                                                        reward_temperature=10,
                                                        baseline_momentum=0.9,
                                                        agent_update_interval=5,
@@ -110,7 +110,11 @@ if __name__ == '__main__':
     parser.add_argument('--num_epoch', type=int, default=-1)
     args = parser.parse_args()
 
-    dataset = load_dataset(args.data_dir)
+    if args.gnn_type == 'GSN':
+        dataset = load_GSN_dataset(args.data_dir)
+    else:
+        dataset = load_dataset(args.data_dir)
+
     if args.num_epoch == -1:
         if args.model_type == 'GCPN':
             finetune_GCPN(dataset=dataset, gnn_type=args.gnn_type, task=args.task,

@@ -6,7 +6,7 @@ from torch import optim
 from torchdrug import models, tasks, core
 from torchdrug.layers import distribution
 
-from utils import load_dataset, load_GNN
+from utils import load_dataset, load_GSN_dataset, load_GNN
 
 
 def pretrain_GCPN(dataset, gnn_type, checkpoint_dir, num_epoch=10):
@@ -46,7 +46,7 @@ def pretrain_GraphAF(dataset, gnn_type, checkpoint_dir, num_epoch=10):
 
     pretrain_task = tasks.AutoregressiveGeneration(node_flow, edge_flow,
                                                    max_edge_unroll=12, max_node=38,
-                                                   criterion="nll")
+                                                   criterion='nll')
     pretrain_optimizer = optim.Adam(pretrain_task.parameters(), lr=1e-3)
     pretrain_solver = core.Engine(pretrain_task, dataset, None, None,
                                   pretrain_optimizer, gpus=(0,),
@@ -71,7 +71,11 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_dir', type=str, required=True)
     args = parser.parse_args()
 
-    dataset = load_dataset(args.data_dir)
+    if args.gnn_type == 'GSN':
+        dataset = load_GSN_dataset(args.data_dir)
+    else:
+        dataset = load_dataset(args.data_dir)
+
     if args.model_type == 'GCPN':
         pretrain_GCPN(dataset=dataset, gnn_type=args.gnn_type,
                       checkpoint_dir=args.checkpoint_dir, num_epoch=1)
