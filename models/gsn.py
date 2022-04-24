@@ -9,17 +9,21 @@ from torchdrug.layers import MessagePassingBase
 MIN_CYCLE = 3
 
 
+def generate_node_structural_feature(graph, max_cycle=8):
+    graph_nx = nx.Graph(graph.edge_list[:, :2].tolist())
+    cycles = [cycle for cycle in nx.cycle_basis(graph_nx) if len(cycle) <= max_cycle]
+    cycle_lens = torch.tensor([len(cycle) for cycle in cycles]) - MIN_CYCLE
+    node_in_cycles = torch.tensor([[i in cycle for cycle in cycles] for i in range(graph.num_node)],
+                                  dtype=torch.int)
+    node_cycle_counts = scatter_add(node_in_cycles, cycle_lens, dim_size=max_cycle - MIN_CYCLE + 1)
+    with graph.node():
+        graph.node_structural_feature = node_cycle_counts
+
+
 def prepare_GSN_dataset(dataset, max_cycle=8):
     for data in dataset:
         graph = data['graph']
-        graph_nx = nx.Graph(graph.edge_list[:, :2].tolist())
-        cycles = [cycle for cycle in nx.cycle_basis(graph_nx) if len(cycle) <= max_cycle]
-        cycle_lens = torch.tensor([len(cycle) for cycle in cycles]) - MIN_CYCLE
-        node_in_cycles = torch.tensor([[i in cycle for cycle in cycles] for i in range(graph.num_node)],
-                                      dtype=torch.int)
-        node_cycle_counts = scatter_add(node_in_cycles, cycle_lens, dim_size=max_cycle - MIN_CYCLE + 1)
-        with graph.node():
-            graph.node_structural_feature = node_cycle_counts
+        generate_node_structural_feature(graph, max_cycle)
 
 
 class GSNLayer(MessagePassingBase):
@@ -131,6 +135,7 @@ class GSN(nn.Module, core.Configurable):
         self.output_dim = feature_dim
         self.num_relation = num_relation
         self.num_layer = num_layer
+        self.max_cycle = max_cycle
         self.short_cut = short_cut
         self.concat_hidden = concat_hidden
 
@@ -160,6 +165,9 @@ class GSN(nn.Module, core.Configurable):
             dict with ``node_feature`` and ``graph_feature`` fields:
                 node representations of shape :math:`(|V|, d)`, graph representations of shape :math:`(n, d)`
         """
+        if not hasattr(graph, 'node_structural_feature'):
+            generate_node_structural_feature(graph, self.max_cycle)
+
         hiddens = []
         layer_input = self.linear(input)
 
