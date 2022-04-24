@@ -2,9 +2,11 @@ from typing import Optional, Dict, List
 
 import torch
 from torch import nn, Tensor
+from torch.nn import functional as F
 from torch.utils import checkpoint
 from torch_geometric.utils import degree
 from torch_scatter import scatter
+from torchdrug import layers, core
 from torchdrug.layers import MessagePassingBase
 
 
@@ -199,3 +201,116 @@ class PNALayer(MessagePassingBase):
     def __repr__(self):
         return (f'{self.__class__.__name__}({self.in_channels}, '
                 f'{self.out_channels}, towers={self.towers}, dim={self.dim})')
+
+
+class PNA(nn.Module, core.Configurable):
+    """
+    Graph Substructure Network proposed in `Improving Graph Neural Network Expressivity
+    via Subgraph Isomorphism Counting`_.
+
+    This implements the GSN-v (vertex-count) variant in the original paper.
+
+    .. _Improving Graph Neural Network Expressivity via Subgraph Isomorphism Counting:
+        https://arxiv.org/pdf/2006.09252.pdf
+
+    Parameters:
+        input_dim (int): input dimension
+        hidden_dim (int): hidden dimension
+        edge_input_dim (int): dimension of edge features
+        num_relation (int): number of relations
+        num_layer (int): number of hidden layers
+        aggregators (list of str): set of aggregation function identifiers,
+            namely "sum", "mean", "min", "max", "var" and "std"
+        scalers: (list of str): set of scaling function identifiers, namely
+            "identity", "amplification", "attenuation", "linear" and "inverse_linear"
+        deg (Tensor): histogram of in-degrees of nodes in the training set, used by scalers to normalise
+        num_tower (int, optional): number of towers
+        num_pre_layer (int, optional): number of MLP layers in each pre-transformation network
+        num_post_layer (int, optional): number of MLP layers in each post-transformation network
+        divide_input (bool, optional): whether the input features should be split between towers or not
+        short_cut (bool, optional): use short cut or not
+        batch_norm (bool, optional): apply batch normalization or not
+        activation (str or function, optional): activation function
+        concat_hidden (bool, optional): concat hidden representations from all layers as output
+        readout (str, optional): readout function. Available functions are ``sum`` and ``mean``.
+    """
+
+    def __init__(self, input_dim, hidden_dim, edge_input_dim, num_relation, num_layer, aggregators, scalers, deg,
+                 num_tower=1, num_pre_layer=1, num_post_layer=1, divide_input=False, short_cut=False, batch_norm=False,
+                 activation='relu', concat_hidden=False, readout='sum'):
+        super(PNA, self).__init__()
+
+        self.input_dim = input_dim
+        self.edge_input_dim = edge_input_dim
+        if concat_hidden:
+            feature_dim = hidden_dim * num_layer
+        else:
+            feature_dim = hidden_dim
+        self.output_dim = feature_dim
+        self.num_relation = num_relation
+        self.num_layer = num_layer
+        self.short_cut = short_cut
+        self.concat_hidden = concat_hidden
+
+        self.embedding = nn.Embedding(input_dim, hidden_dim)
+
+        self.layers = nn.ModuleList()
+        for i in range(num_layer):
+            self.layers.append(
+                PNALayer(in_channels=hidden_dim, out_channels=hidden_dim, aggregators=aggregators, scalers=scalers,
+                         deg=deg, edge_dim=edge_input_dim, towers=num_tower, pre_layers=num_pre_layer,
+                         post_layers=num_post_layer, divide_input=divide_input))
+
+        if batch_norm:
+            self.batch_norm = nn.BatchNorm1d(input_dim)
+        else:
+            self.batch_norm = None
+        if isinstance(activation, str):
+            self.activation = getattr(F, activation)
+        else:
+            self.activation = activation
+
+        if readout == 'sum':
+            self.readout = layers.SumReadout()
+        elif readout == 'mean':
+            self.readout = layers.MeanReadout()
+        else:
+            raise ValueError(f'Unknown readout {readout}')
+
+    def forward(self, graph, input, all_loss=None, metric=None):
+        """
+        Compute the node representations and the graph representation(s).
+        Parameters:
+            graph (Graph): :math:`n` graph(s)
+            input (Tensor): input node representations
+            all_loss (Tensor, optional): if specified, add loss to this tensor
+            metric (dict, optional): if specified, output metrics to this dict
+        Returns:
+            dict with ``node_feature`` and ``graph_feature`` fields:
+                node representations of shape :math:`(|V|, d)`, graph representations of shape :math:`(n, d)`
+        """
+        hiddens = []
+        layer_input = self.embedding(input)
+
+        for layer in self.layers:
+            hidden = layer(graph, layer_input)
+            if self.batch_norm:
+                hidden = self.batch_norm(hidden)
+            if self.activation:
+                hidden = self.activation(hidden)
+
+            if self.short_cut and hidden.shape == layer_input.shape:
+                hidden = hidden + layer_input
+            hiddens.append(hidden)
+            layer_input = hidden
+
+        if self.concat_hidden:
+            node_feature = torch.cat(hiddens, dim=-1)
+        else:
+            node_feature = hiddens[-1]
+        graph_feature = self.readout(graph, node_feature)
+
+        return {
+            'graph_feature': graph_feature,
+            'node_feature': node_feature
+        }
