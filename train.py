@@ -78,9 +78,7 @@ if __name__ == '__main__':
 
     if args.model_type == 'GCPN':
         pretrain_GCPN(dataset=dataset, gnn_type=args.gnn_type,
-                      checkpoint_dir=args.checkpoint_dir, num_epoch=1)
-        pretrain_GCPN(dataset=dataset, gnn_type=args.gnn_type,
-                      checkpoint_dir=args.checkpoint_dir, num_epoch=10)
+                      checkpoint_dir=args.checkpoint_dir)
     elif args.model_type == 'GraphAF':
         pretrain_GraphAF(dataset=dataset, gnn_type=args.gnn_type,
                          checkpoint_dir=args.checkpoint_dir)
