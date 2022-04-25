@@ -56,7 +56,8 @@ def load_GNN(dataset, model_type, gnn_type):
     elif gnn_type == 'PNA':
         deg = torch.zeros(10, dtype=torch.long, device='cuda')
         for data in dataset:
-            d = degree(data.edge_index[1], num_nodes=data.num_nodes, dtype=torch.long)
+            graph = data['graph']
+            d = degree(graph.edge_list[:, 1], num_nodes=graph.num_node, dtype=torch.long)
             deg += torch.bincount(d, minlength=deg.numel())
 
         gnn = PNA(input_dim=dataset.node_feature_dim,
