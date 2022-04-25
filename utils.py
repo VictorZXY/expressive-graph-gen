@@ -54,7 +54,8 @@ def load_GNN(dataset, model_type, gnn_type):
         else:
             assert False
     elif gnn_type == 'PNA':
-        deg = torch.zeros(10, dtype=torch.long, device='cuda')
+        # compute in-degree histogram over data
+        deg = torch.zeros(10, dtype=torch.long)
         for data in dataset:
             graph = data['graph']
             d = degree(graph.edge_list[:, 1], num_nodes=graph.num_node, dtype=torch.long)
