@@ -263,7 +263,7 @@ class PNA(nn.Module, core.Configurable):
                          post_layers=num_post_layer, divide_input=divide_input))
 
         if batch_norm:
-            self.batch_norm = nn.BatchNorm1d(input_dim)
+            self.batch_norm = nn.BatchNorm1d(hidden_dim)
         else:
             self.batch_norm = None
         if isinstance(activation, str):
