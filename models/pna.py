@@ -155,7 +155,7 @@ class PNALayer(MessagePassingBase):
                 post_modules += [nn.Linear(self.F_out, self.F_out)]
             self.post_mlps.append(nn.Sequential(*post_modules))
 
-        self.linear = nn.Linear(out_channels, out_channels)
+        self.update_mlp = nn.Linear(out_channels, out_channels)
 
     def message(self, graph, input):
         node_in = graph.edge_list[:, 0]
@@ -172,7 +172,8 @@ class PNALayer(MessagePassingBase):
 
     def aggregate(self, graph, message):
         node_out = graph.edge_list[:, 1]
-        edge_weight = graph.edge_weight.unsqueeze(-1)
+        edge_weight = graph.edge_weight.view(-1, 1, 1)
+        edge_weight = edge_weight.repeat(1, self.towers, 1)
         update = [aggr(message * edge_weight, node_out, graph.num_node) for aggr in self.aggregators]
         update = torch.cat(update, dim=-1)
         deg = degree(node_out, graph.num_node, dtype=message.dtype).view(-1, 1, 1)
@@ -183,7 +184,7 @@ class PNALayer(MessagePassingBase):
         output = torch.cat([input, update], dim=-1)
         output = [mlp(output[:, i]) for i, mlp in enumerate(self.post_mlps)]
         output = torch.cat(output, dim=1)
-        return self.linear(output)
+        return self.update_mlp(output)
 
     def forward(self, graph, input):
         if self.divide_input:
@@ -252,7 +253,7 @@ class PNA(nn.Module, core.Configurable):
         self.short_cut = short_cut
         self.concat_hidden = concat_hidden
 
-        self.linear = nn.Linear(input_dim, hidden_dim)
+        self.node_encoder = nn.Linear(input_dim, hidden_dim)
 
         self.layers = nn.ModuleList()
         for i in range(num_layer):
@@ -290,7 +291,7 @@ class PNA(nn.Module, core.Configurable):
                 node representations of shape :math:`(|V|, d)`, graph representations of shape :math:`(n, d)`
         """
         hiddens = []
-        layer_input = self.linear(input)
+        layer_input = self.node_encoder(input)
 
         for layer in self.layers:
             hidden = layer(graph, layer_input)
