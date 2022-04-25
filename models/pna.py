@@ -252,7 +252,7 @@ class PNA(nn.Module, core.Configurable):
         self.short_cut = short_cut
         self.concat_hidden = concat_hidden
 
-        self.embedding = nn.Embedding(input_dim, hidden_dim)
+        self.linear = nn.Linear(input_dim, hidden_dim)
 
         self.layers = nn.ModuleList()
         for i in range(num_layer):
@@ -290,7 +290,7 @@ class PNA(nn.Module, core.Configurable):
                 node representations of shape :math:`(|V|, d)`, graph representations of shape :math:`(n, d)`
         """
         hiddens = []
-        layer_input = self.embedding(input)
+        layer_input = self.linear(input)
 
         for layer in self.layers:
             hidden = layer(graph, layer_input)
